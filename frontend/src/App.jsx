@@ -37,7 +37,7 @@ function App() {
       formData.append("use_selection", "false");
 
       // Enviar al backend para conversión
-      const result = await axios.post("http://localhost:8000/convert", formData, {
+      const result = await axios.post("http://localhost:8002/convert", formData, {
         responseType: 'blob'
       });
 
@@ -204,7 +204,7 @@ function App() {
       formData.append("use_selection", "false");
 
       console.log("Enviando datos al backend...");
-      const response1 = await axios.post("http://localhost:8000/convert", formData, {
+      const response1 = await axios.post("http://localhost:8002/convert", formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }

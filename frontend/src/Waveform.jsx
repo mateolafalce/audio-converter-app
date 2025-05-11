@@ -11,7 +11,6 @@ const Waveform = ({ audioUrl, onRegionChange }) => {
   useEffect(() => {
     if (!audioUrl) return;
 
-    // Configuración de WaveSurfer
     const wavesurfer = WaveSurfer.create({
       container: waveformRef.current,
       waveColor: "#22c55e",
@@ -29,15 +28,12 @@ const Waveform = ({ audioUrl, onRegionChange }) => {
 
     wavesurferRef.current = wavesurfer;
 
-    // Cargar el audio
     wavesurfer.load(audioUrl);
 
-    // Eventos
     wavesurfer.on('ready', () => {
       setIsReady(true);
       console.log('WaveSurfer está listo');
-      
-      // Habilitar la creación de regiones por drag
+
       wavesurfer.enableDragSelection({
         color: 'rgba(34, 197, 94, 0.3)',
       });
@@ -63,7 +59,6 @@ const Waveform = ({ audioUrl, onRegionChange }) => {
       });
     });
 
-    // Limpieza
     return () => {
       if (wavesurfer) {
         wavesurfer.destroy();

@@ -14,6 +14,8 @@
 - Castro Cope Sixto Javier – 32797
 - Lafalce Mateo – 33217
 
+[LINK AL SITIO WEB](https://comunicaciontest.duckdns.org/)
+
 **Propuesta:** Una aplicación que permita cargar o grabar audio en formato analógico (o simulado) y convertirlo a distintas resoluciones digitales, mostrando cómo varían la calidad y el tamaño del archivo según la configuración de muestreo y cuantización.
 
 * Vamos a desarrollar las siguientes funcionalidades:

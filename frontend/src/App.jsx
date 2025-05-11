@@ -7,7 +7,6 @@ function App() {
   const [recording, setRecording] = useState(false);
   const [audioURL, setAudioURL] = useState("");
   const [bitDepth, setBitDepth] = useState(16);
-  const [selectedRegion, setSelectedRegion] = useState(null);
   const [audioContext, setAudioContext] = useState(null);
   const [sourceNode, setSourceNode] = useState(null);
   const mediaRecorderRef = useRef(null);
@@ -15,9 +14,10 @@ function App() {
   const [recordingTime, setRecordingTime] = useState(0);
   const timerRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [processedFiles, setProcessedFiles] = useState([]);
+  const [bitDepths] = useState([8, 16, 24]);
 
-  // Función para enviar audio al backend y obtener la descarga
-  const handleDownloadFromBackend = async (format, useSelection = false) => {
+  const handleDownloadFromBackend = async (format) => {
     setIsLoading(true);
     try {
       const audio = new Audio(audioURL);
@@ -27,104 +27,46 @@ function App() {
       const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
 
       let bufferToUse = audioBuffer;
-      
-      if (useSelection && selectedRegion) {
-        const { start, end } = selectedRegion;
-        const sampleRate = audioBuffer.sampleRate;
-        const startSample = Math.floor(start * sampleRate);
-        const endSample = Math.floor(end * sampleRate);
 
-        const trimmedBuffer = audioContext.createBuffer(
-          audioBuffer.numberOfChannels,
-          endSample - startSample,
-          sampleRate
-        );
-
-        for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
-          const channelData = audioBuffer.getChannelData(channel);
-          const trimmedData = channelData.slice(startSample, endSample);
-          trimmedBuffer.copyToChannel(trimmedData, channel);
-        }
-
-        bufferToUse = trimmedBuffer;
-      }
-
-      // Convertir a WAV (el backend se encargará de la conversión a MP3 si es necesario)
+      // Convertir a WAV para enviar al backend
       const wavBlob = bufferToWav(bufferToUse);
       const formData = new FormData();
       formData.append("file", wavBlob, "audio.wav");
       formData.append("bit_depth", bitDepth);
       formData.append("format", format); // 'wav' o 'mp3'
-      formData.append("use_selection", useSelection ? "true" : "false");
+      formData.append("use_selection", "false");
 
-      // Enviar al backend para procesamiento
+      // Enviar al backend para conversión
       const result = await axios.post("http://localhost:8000/convert", formData, {
         responseType: 'blob'
       });
 
-      // Crear URL para descarga
-      const url = window.URL.createObjectURL(new Blob([result.data]));
+      const resultBlob = new Blob([result.data]);
+      const url = window.URL.createObjectURL(resultBlob);
+
+      // Descargar automáticamente
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', `audio.${format}`);
       document.body.appendChild(link);
       link.click();
       link.remove();
-      
+
+      // Guardar archivo en estado para mostrar en la tabla
+      setProcessedFiles(prev => [
+        ...prev,
+        {
+          format,
+          blob: resultBlob,
+          sizeKB: (resultBlob.size / 1024).toFixed(2),
+          url,
+        }
+      ]);
     } catch (error) {
       console.error("Error al descargar:", error);
       alert("Hubo un error al procesar el audio");
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const enviarRecorte = async (region = null) => {
-    try {
-      if (region && region.start === region.end) {
-        alert("La región seleccionada no tiene duración");
-        return;
-      }
-
-      const audio = new Audio(audioURL);
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      const response = await fetch(audioURL);
-      const arrayBuffer = await response.arrayBuffer();
-      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-
-      let bufferToSend = audioBuffer;
-      
-      if (region) {
-        const { start, end } = region;
-        const sampleRate = audioBuffer.sampleRate;
-        const startSample = Math.floor(start * sampleRate);
-        const endSample = Math.floor(end * sampleRate);
-
-        const trimmedBuffer = audioContext.createBuffer(
-          audioBuffer.numberOfChannels,
-          endSample - startSample,
-          sampleRate
-        );
-
-        for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
-          const channelData = audioBuffer.getChannelData(channel);
-          const trimmedData = channelData.slice(startSample, endSample);
-          trimmedBuffer.copyToChannel(trimmedData, channel);
-        }
-
-        bufferToSend = trimmedBuffer;
-      }
-
-      const wavBlob = bufferToWav(bufferToSend);
-      const formData = new FormData();
-      formData.append("file", wavBlob, region ? "recorte.wav" : "audio_completo.wav");
-      formData.append("bit_depth", bitDepth);
-
-      await axios.post("http://localhost:8000/upload", formData);
-      alert(region ? "Fragmento enviado correctamente." : "Audio completo enviado correctamente.");
-    } catch (error) {
-      console.error("Error al enviar:", error);
-      alert("Hubo un error al enviar el audio");
     }
   };
 
@@ -245,12 +187,90 @@ function App() {
     }
   };
 
+  const handleProcessAudio = async (audioUrl) => {
+    setIsLoading(true);
+    try {
+      console.log("Iniciando procesamiento de audio...");
+      
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const response = await fetch(audioUrl);
+      const arrayBuffer = await response.arrayBuffer();
+      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+      const wavBlob = bufferToWav(audioBuffer);
+      const formData = new FormData();
+      formData.append("file", wavBlob, "audio.wav");
+      formData.append("bit_depth", bitDepth);
+      formData.append("use_selection", "false");
+
+      console.log("Enviando datos al backend...");
+      const response1 = await axios.post("http://localhost:8000/convert", formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      console.log("Respuesta recibida del backend:", response1);
+
+      if (!response1.data.results) {
+        throw new Error("El backend no devolvió resultados");
+      }
+
+      const results = response1.data.results;
+      console.log(`Procesando ${results.length} resultados...`);
+
+      const processedFiles = results.map(result => {
+        try {
+          const binaryString = atob(result.content);
+          const bytes = new Uint8Array(binaryString.length);
+          for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+          const blob = new Blob([bytes], { type: result.mime_type });
+          return {
+            format: result.format,
+            bitDepth: result.bit_depth,
+            blob: blob,
+            sizeKB: (result.size / 1024).toFixed(2),
+            url: URL.createObjectURL(blob)
+          };
+        } catch (e) {
+          console.error("Error procesando resultado:", e);
+          return null;
+        }
+      }).filter(item => item !== null);
+
+      console.log("Archivos procesados:", processedFiles);
+      setProcessedFiles(processedFiles);
+      
+    } catch (error) {
+      console.error("Error en handleProcessAudio:", error);
+      alert(`Error al procesar el audio: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const stopRecording = () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
-      mediaRecorderRef.current.stop();
-      setRecording(false);
-      
-      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+      // Creamos una promesa para esperar a que termine el procesamiento
+      const waitForStop = new Promise((resolve) => {
+        mediaRecorderRef.current.onstop = () => {
+          clearInterval(timerRef.current);
+          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+          const audioUrl = URL.createObjectURL(audioBlob);
+          setAudioURL(audioUrl);
+          resolve(audioUrl); // Resolvemos la promesa con la URL
+        };
+        
+        mediaRecorderRef.current.stop();
+        setRecording(false);
+        mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+      });
+
+      // Esperamos a que la promesa se resuelva y luego procesamos
+      waitForStop.then((audioUrl) => {
+        handleProcessAudio(audioUrl); // Pasamos la URL directamente
+      });
     }
   };
 
@@ -262,47 +282,14 @@ function App() {
 
   return (
     <div className="p-4 max-w-xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Conversor A/D</h1>
-
-      <label className="block mb-2">
-        Profundidad de bits:
-        <select
-          className="ml-2 border p-1"
-          value={bitDepth}
-          onChange={(e) => setBitDepth(parseInt(e.target.value))}
-        >
-          <option value={8}>8 bits</option>
-          <option value={16}>16 bits</option>
-          <option value={24}>24 bits</option>
-        </select>
-      </label>
-
-      <div className="flex gap-2 mb-4 items-center">
-        {!recording ? (
-          <button 
-            onClick={startRecording} 
-            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
-          >
-            Grabar
-          </button>
-        ) : (
-          <button 
-            onClick={stopRecording} 
-            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
-          >
-            Detener
-          </button>
-        )}
-
-        {recording && (
+      <h1 className="text-2xl font-bold mb-4">Conversor de Audio Analógico a Digital</h1>
+      {recording && audioContext && sourceNode && (
           <div className="ml-2 text-gray-700 font-medium">
             Tiempo: {formatTime(recordingTime)}
           </div>
-        )}
-
-      </div>
-
+      )}
       {recording && audioContext && sourceNode && (
+      
         <FrequencyVisualizer 
           audioContext={audioContext} 
           sourceNode={sourceNode} 
@@ -313,19 +300,7 @@ function App() {
         <>
           <Waveform 
             audioUrl={audioURL} 
-            onRegionChange={setSelectedRegion}
           />
-          
-          {selectedRegion && (
-            <div className="mt-2 text-sm text-gray-600">
-              <p>
-                Región seleccionada: {selectedRegion.start.toFixed(2)}s - {selectedRegion.end.toFixed(2)}s
-              </p>
-              <p>
-                Duración: {(selectedRegion.end - selectedRegion.start).toFixed(2)}s
-              </p>
-            </div>
-          )}
 
           <div className="mt-4">
             <audio 
@@ -336,23 +311,61 @@ function App() {
             />
           </div>
 
-          <div className="mt-4 flex gap-2">
-            <button
-              onClick={() => handleDownloadFromBackend('wav', false)}
-              disabled={isLoading}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-            >
-              {isLoading ? "Procesando..." : "Descargar WAV"}
-            </button>
-            
-            <button
-              onClick={() => handleDownloadFromBackend('mp3', false)}
-              disabled={isLoading}
-              className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
-            >
-              {isLoading ? "Procesando..." : "Descargar MP3"}
-            </button>
+        {isLoading && (
+          <div className="mt-4 p-4 bg-blue-50 text-blue-800 rounded-lg">
+            Procesando audio, por favor espere...
           </div>
+        )}
+
+        {!isLoading && (
+          <div className="mt-6">
+            <h2 className="text-lg font-semibold mb-2">Comparativa de formatos</h2>
+            <div className="overflow-x-auto">
+              <table className="min-w-full bg-white border border-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Formato
+                    </th>
+                    <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Profundidad (bits)
+                    </th>
+                    <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Tamaño (KB)
+                    </th>
+                    <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Acción
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {processedFiles.map((file, index) => (
+                    <tr key={index}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {file.format.toUpperCase()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {file.bitDepth}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {file.sizeKB}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <a
+                          href={file.url}
+                          download={`audio_${file.bitDepth}bits.${file.format}`}
+                          className="text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                          Descargar
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
         </>
       )}
 
@@ -361,6 +374,25 @@ function App() {
           Graba audio para ver el visualizador
         </div>
       )}
+      <div className="flex flex-col items-center justify-center">
+        <div className="flex gap-2 items-center rounded-lg p-4 bg-white">
+          {!recording ? (
+            <button 
+              onClick={startRecording} 
+              className="bg-red-500 hover:bg-green-600 text-white px-4 py-3 rounded-full"
+            >
+              <i className="material-icons" style={{ fontSize: '36px' }}>mic</i>
+            </button>
+          ) : (
+            <button 
+              onClick={stopRecording} 
+              className="bg-green-500 hover:bg-red-600 text-white px-4 py-2 rounded-full"
+            >
+              <i className="material-icons" style={{ fontSize: '36px' }}>mic</i>
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

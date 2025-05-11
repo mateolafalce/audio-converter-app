@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="iceGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#a8d8ea"/>
+      <stop offset="100%" stop-color="#38b6ff"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#iceGradient)" 
+        d="M24 80 Q64 16 104 80 Q80 112 64 104 Q48 112 24 80 Z"/>
+</svg>

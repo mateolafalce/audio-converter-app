@@ -1,4 +1,30 @@
-# TODO
+# Trabajo Práctico Integrador 🤖👹👄👁️👴
+
+## Ingeniería aplicada a la comunicación de datos
+
+**Materia:** Comunicación de Datos
+**Comisión:** S31
+**Año:** 2025
+**Profesores:** Gerardo Leskiw y Agustin Alvarez Ferrando
+**Grupo: 8**
+**Alumnos:**
+
+- Antar Mauro Daniel – 32594
+- Alvares Diego Nicolás – 29220
+- Castro Cope Sixto Javier – 32797
+- Lafalce Mateo – 33217
+
+**Propuesta:** Una aplicación que permita cargar o grabar audio en formato analógico (o simulado) y convertirlo a distintas resoluciones digitales, mostrando cómo varían la calidad y el tamaño del archivo según la configuración de muestreo y cuantización.
+
+* Vamos a desarrollar las siguientes funcionalidades:
+   * [x] Grabación de audio en tiempo real con un micrófono.
+   * [ ] Exportación del audio digitalizado en formatos como WAV o MP3.
+   * [ ] Cuantización con distintas profundidades de bits (8, 16, 24 bits).
+
+**Arquitectura:** Vamos a utilizar una arquitectura web, específicamente una SPA (Single Page Application).
+
+**Herramientas y tecnologías:** Vamos a utilizar IDEs del tipo de Visual Studio Code. En cuanto a tecnologías elegimos React y tailwindcss para el frontend y FastAPI (Python) para el backend.
+
 
 ## Backend
 

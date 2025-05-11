@@ -1,9 +1,9 @@
 from fastapi import FastAPI, File, UploadFile, Form
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-import os
 from pydub import AudioSegment
 import io
+import base64
 
 app = FastAPI()
 
@@ -15,40 +15,57 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+def convert_audio_with_bit_depth(audio_segment, bit_depth, format):
+    output_io = io.BytesIO()
+    
+    if format == "wav":
+        sample_width = bit_depth // 8
+        audio_segment = audio_segment.set_sample_width(sample_width)
+    
+    export_kwargs = {"format": format}
+    if format == "mp3":
+        export_kwargs["bitrate"] = "192k"
+    
+    audio_segment.export(output_io, **export_kwargs)
+    output_io.seek(0)
+    return output_io.getvalue()
+
 @app.post("/convert")
 async def convert_audio(
     file: UploadFile = File(...),
-    bit_depth: int = Form(...),
-    format: str = Form(...)
+    bit_depth: int = Form(16),
+    use_selection: str = Form("false")
 ):
-    # Leer archivo de entrada
-    contents = await file.read()
-
-    # Cargar audio con pydub
-    audio = AudioSegment.from_file(io.BytesIO(contents))
-
-    # Ajustar profundidad de bits
-    if bit_depth == 8:
-        audio = audio.set_sample_width(1)
-    elif bit_depth == 16:
-        audio = audio.set_sample_width(2)
-    elif bit_depth == 24:
-        audio = audio.set_sample_width(3)
-    else:
-        return {"error": "Profundidad de bits no soportada (solo 8, 16 o 24)."}
-
-    # Convertir y preparar respuesta
-    output_io = io.BytesIO()
-    export_format = format.lower()
-
-    # Exportar a WAV o MP3
-    if export_format in ["wav", "mp3"]:
-        audio.export(output_io, format=export_format)
-        output_io.seek(0)
-        return StreamingResponse(
-            output_io,
-            media_type=f"audio/{export_format}",
-            headers={"Content-Disposition": f"attachment; filename=converted.{export_format}"}
+    try:
+        input_bytes = await file.read()
+        
+        # Cargar el audio desde los bytes recibidos
+        audio = AudioSegment.from_file(io.BytesIO(input_bytes), format="wav")
+        
+        formats = ["wav", "mp3"]
+        bit_depths = [8, 16, 24]
+        results = []
+        
+        for format in formats:
+            for depth in bit_depths:
+                try:
+                    file_bytes = convert_audio_with_bit_depth(audio, depth, format)
+                    encoded_content = base64.b64encode(file_bytes).decode('utf-8')
+                    
+                    results.append({
+                        "format": format,
+                        "bit_depth": depth,
+                        "content": encoded_content,
+                        "size": len(file_bytes),
+                        "mime_type": f"audio/{format}"
+                    })
+                except Exception as e:
+                    continue
+        
+        return JSONResponse(content={"results": results})
+    
+    except Exception as e:
+        return JSONResponse(
+            content={"error": str(e)},
+            status_code=500
         )
-    else:
-        return {"error": "Formato de salida no soportado (solo 'wav' o 'mp3')."}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 const tableBase = "min-w-full bg-white";
 const thBase = "px-2 py-2 sm:px-6 sm:py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider";
@@ -32,19 +32,47 @@ function Table({ headers, rows }) {
 }
 
 function ResultTable({ files }) {
+  const [currentAudio, setCurrentAudio] = useState(null);
+
   if (!files.length) return null;
+
   const headers = [
     { label: "Formato", key: "format", render: v => v.toUpperCase() },
     { label: "Profundidad (bits)", key: "bitDepth" },
     { label: "Tamaño (KB)", key: "sizeKB" },
-    { label: "Acción", key: "url", render: (v, f) =>
-      <a href={v} download={`audio_${f.bitDepth}bits.${f.format}`} className="text-blue-600 hover:text-blue-800 hover:underline">Descargar</a>
-    }
+    { label: "Acción", key: "url", render: (v, f) => (
+      <div className="flex items-center gap-2">
+        <a
+          href={v}
+          download={`audio_${f.bitDepth}bits.${f.format}`}
+          className="text-blue-600 hover:text-blue-800 hover:underline"
+        >
+          Descargar
+        </a>
+        <button
+          onClick={() => setCurrentAudio(v)}
+          className="text-green-600 hover:text-green-800 hover:underline"
+        >
+          Reproducir
+        </button>
+      </div>
+    ) }
   ];
+
   return (
     <div className="mt-6">
       <h2 className="text-lg font-semibold mb-2">Comparativa de formatos</h2>
       <Table headers={headers} rows={files} />
+      {currentAudio && (
+        <div className="mt-4">
+          <audio
+            src={currentAudio}
+            controls
+            autoPlay
+            className="w-full [&::-webkit-media-controls-panel]:bg-gray-100"
+          />
+        </div>
+      )}
     </div>
   );
 }

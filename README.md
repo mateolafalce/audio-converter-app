@@ -20,8 +20,8 @@
 
 * Vamos a desarrollar las siguientes funcionalidades:
    * [x] Grabación de audio en tiempo real con un micrófono.
-   * [ ] Exportación del audio digitalizado en formatos como WAV o MP3.
-   * [ ] Cuantización con distintas profundidades de bits (8, 16, 24 bits).
+   * [x] Exportación del audio digitalizado en formatos como WAV o MP3.
+   * [x] Cuantización con distintas profundidades de bits (8, 16, 24 bits).
 
 **Arquitectura:** Vamos a utilizar una arquitectura web, específicamente una SPA (Single Page Application).
 

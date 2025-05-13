@@ -6,17 +6,19 @@ import Waveform from "./Waveform";
 // --- Utilidades de estilo ---
 const btnBase = "rounded-full text-white px-4 py-3";
 const iconStyle = { fontSize: '36px' };
-const tableBase = "min-w-full bg-white border border-gray-200";
-const thBase = "px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider";
-const tdBase = "px-6 py-4 whitespace-nowrap text-sm text-gray-900";
+const tableBase = "min-w-full bg-white border border-gray-200 block w-full";
+const thBase = "px-2 py-2 sm:px-6 sm:py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider";
+const tdBase = "px-2 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-900";
 
 // --- Utilidad para obtener la URL de la API ---
-const getApiUrl = (endpoint) => {
-  if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+function getApiUrl(endpoint) {
+  // Si estamos en desarrollo local
+  if (window.location.hostname === "localhost") {
     return `http://localhost:8002${endpoint}`;
   }
+  // Producción: usa proxy o ruta relativa
   return `/api${endpoint}`;
-};
+}
 
 // --- Componentes reutilizables ---
 const IconButton = ({ onClick, color, icon }) => (
@@ -26,7 +28,7 @@ const IconButton = ({ onClick, color, icon }) => (
 );
 
 const Table = ({ headers, rows }) => (
-  <div className="overflow-x-auto">
+  <div className="overflow-x-auto w-full">
     <table className={tableBase}>
       <thead className="bg-gray-50">
         <tr>
@@ -213,8 +215,8 @@ function App() {
 
   // --- Render ---
   return (
-    <div className="p-4 max-w-xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Conversor de Audio Analógico a Digital</h1>
+    <div className="p-2 sm:p-4 max-w-full sm:max-w-xl mx-auto">
+      <h1 className="text-xl sm:text-2xl font-bold mb-4 text-center">Conversor de Audio Analógico a Digital</h1>
       {recording && audioContext && sourceNode && (
         <>
           <div className="ml-2 text-gray-700 font-medium">Tiempo: {formatTime(recordingTime)}</div>

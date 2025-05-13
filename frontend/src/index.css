@@ -17,5 +17,9 @@ body {
   font-family: 'Segoe UI';
   background-color: white; /* Fondo oscuro */
   overflow-x: hidden; /* Evita scroll horizontal no deseado */
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 

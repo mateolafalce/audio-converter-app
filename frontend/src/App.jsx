@@ -21,8 +21,10 @@ function App() {
       {/* --- Visualización en tiempo real mientras graba --- */}
       {recording && audioContext && sourceNode && (
         <>
-          <div className="ml-2 text-gray-700 font-medium">Tiempo: {formatTime(recordingTime)}</div>
-          <FrequencyVisualizer audioContext={audioContext} sourceNode={sourceNode} />
+          <div className="ml-2 text-gray-500 font-medium">Tiempo: {formatTime(recordingTime)}</div>
+          <div className="rounded bg-gray-100 p-2 my-2">
+            <FrequencyVisualizer audioContext={audioContext} sourceNode={sourceNode} />
+          </div>
         </>
       )}
       {/* --- Visualización y descarga de resultados cuando hay audio --- */}

@@ -2,66 +2,47 @@ import React, { useEffect, useRef, useState } from "react";
 import WaveSurfer from "wavesurfer.js";
 import RegionsPlugin from "wavesurfer.js/plugins/regions";
 
-const Waveform = ({ audioUrl, onRegionChange }) => {
+const Waveform = ({ audioUrl }) => {
   const waveformRef = useRef(null);
   const wavesurferRef = useRef(null);
   const [isReady, setIsReady] = useState(false);
-  const [region, setRegion] = useState(null);
 
   useEffect(() => {
     if (!audioUrl) return;
-
-    const wavesurfer = WaveSurfer.create({
-      container: waveformRef.current,
-      waveColor: "#22c55e",
-      progressColor: "#16a34a",
-      cursorColor: "#111827",
-      cursorWidth: 1,
-      height: 100,
-      barWidth: 2,
-      barRadius: 3,
-      barGap: 2,
-      responsive: true,
-      normalize: true,
-      plugins: [RegionsPlugin.create()],
-    });
-
-    wavesurferRef.current = wavesurfer;
-
-    wavesurfer.load(audioUrl);
-
-    wavesurfer.on('ready', () => {
-      setIsReady(true);
-      console.log('WaveSurfer está listo');
-
-      wavesurfer.enableDragSelection({
-        color: 'rgba(34, 197, 94, 0.3)',
+    // Destruye la instancia previa si existe
+    if (wavesurferRef.current) {
+      wavesurferRef.current.destroy();
+      wavesurferRef.current = null;
+    }
+    let wavesurfer;
+    try {
+      wavesurfer = WaveSurfer.create({
+        container: waveformRef.current,
+        waveColor: "#22c55e",
+        progressColor: "#16a34a",
+        cursorColor: "#111827",
+        cursorWidth: 1,
+        height: 100,
+        barWidth: 2,
+        barRadius: 3,
+        barGap: 2,
+        responsive: true,
+        normalize: true,
+        plugins: [RegionsPlugin.create()],
       });
-    });
-
-    wavesurfer.on('error', (error) => {
-      console.error('Error en WaveSurfer:', error);
-    });
-
-    wavesurfer.on('region-created', (newRegion) => {
-      setRegion(newRegion);
-      if (onRegionChange) onRegionChange({
-        start: newRegion.start,
-        end: newRegion.end,
+      wavesurferRef.current = wavesurfer;
+      wavesurfer.load(audioUrl);
+      wavesurfer.on('ready', () => setIsReady(true));
+      wavesurfer.on('error', (error) => {
+        console.error('Error en WaveSurfer:', error);
       });
-    });
-
-    wavesurfer.on('region-updated', (updatedRegion) => {
-      setRegion(updatedRegion);
-      if (onRegionChange) onRegionChange({
-        start: updatedRegion.start,
-        end: updatedRegion.end,
-      });
-    });
-
+    } catch (err) {
+      console.error("Error inicializando WaveSurfer:", err);
+    }
     return () => {
-      if (wavesurfer) {
-        wavesurfer.destroy();
+      if (wavesurferRef.current) {
+        wavesurferRef.current.destroy();
+        wavesurferRef.current = null;
       }
     };
   }, [audioUrl]);

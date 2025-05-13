@@ -38,20 +38,28 @@ async def convert_audio(
 ):
     try:
         input_bytes = await file.read()
-        
-        # Cargar el audio desde los bytes recibidos
-        audio = AudioSegment.from_file(io.BytesIO(input_bytes), format="wav")
-        
+        if not input_bytes or len(input_bytes) < 44:
+            return JSONResponse(
+                content={"error": "Archivo de audio vacío o corrupto."},
+                status_code=400
+            )
+        try:
+            audio = AudioSegment.from_file(io.BytesIO(input_bytes), format="wav")
+        except Exception as e:
+            return JSONResponse(
+                content={"error": f"No se pudo decodificar el archivo WAV: {str(e)}"},
+                status_code=400
+            )
+
         formats = ["wav", "mp3"]
         bit_depths = [8, 16, 24]
         results = []
-        
+
         for format in formats:
             for depth in bit_depths:
                 try:
                     file_bytes = convert_audio_with_bit_depth(audio, depth, format)
                     encoded_content = base64.b64encode(file_bytes).decode('utf-8')
-                    
                     results.append({
                         "format": format,
                         "bit_depth": depth,
@@ -59,11 +67,11 @@ async def convert_audio(
                         "size": len(file_bytes),
                         "mime_type": f"audio/{format}"
                     })
-                except Exception as e:
+                except Exception:
                     continue
-        
+
         return JSONResponse(content={"results": results})
-    
+
     except Exception as e:
         return JSONResponse(
             content={"error": str(e)},

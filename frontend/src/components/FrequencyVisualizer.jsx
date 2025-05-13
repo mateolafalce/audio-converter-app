@@ -34,7 +34,13 @@ const FrequencyVisualizer = ({ audioContext, sourceNode }) => {
       for (let i = 0; i < bufferLength; i++) {
         const barHeight = (dataArray[i] / 255) * height;
 
-        ctx.fillStyle = `hsl(${i * 360 / bufferLength}, 100%, 50%)`;
+        // Degradado de verde a gris claro
+        const green = 197 + Math.floor((255 - 197) * (i / bufferLength)); // de #22c55e a #e5e7eb
+        const color = i < bufferLength * 0.7
+          ? `rgb(34,197,94)` // #22c55e
+          : `rgb(${229},${231},${235})`; // #e5e7eb
+
+        ctx.fillStyle = color;
         ctx.fillRect(x, height - barHeight, barWidth, barHeight);
 
         x += barWidth + 1;

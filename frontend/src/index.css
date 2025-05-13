@@ -12,7 +12,6 @@ input:-webkit-autofill:active {
   transition: background-color 5000s ease-in-out 0s;
 }
 
-
 body {
   margin: 0;
   font-family: 'Segoe UI';

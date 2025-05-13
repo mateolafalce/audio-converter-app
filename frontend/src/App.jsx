@@ -1,12 +1,8 @@
 import React, { useState } from "react";
-// --- Visualizador de frecuencia y forma de onda ---
 import FrequencyVisualizer from "./components/FrequencyVisualizer";
 import Waveform from "./components/Waveform";
-// --- Grabador y procesador de audio ---
 import AudioRecorder from "./features/AudioRecorder";
-// --- Tabla de resultados de conversión ---
 import ResultTable from "./components/ResultTable";
-// --- Utilidad para formatear tiempo ---
 import { formatTime } from "./utils/formatTime";
 
 function App() {

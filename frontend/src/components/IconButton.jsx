@@ -2,8 +2,8 @@ import React from "react";
 import MicrofonoSVG from "../assets/icons/microfono.svg";
 
 const btnBase = "rounded-full text-white transition-all duration-200 ease-in-out focus:outline-none flex items-center justify-center";
-const size = "w-16 h-16"; // Asegura círculo perfecto
-const iconClass = "w-9 h-9 mx-auto my-auto block"; // Centrado explícito
+const size = "w-16 h-16"; 
+const iconClass = "w-9 h-9 mx-auto my-auto block"; 
 
 function IconButton({ onClick, isActive }) {
   return (

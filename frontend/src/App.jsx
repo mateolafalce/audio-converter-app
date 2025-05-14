@@ -100,10 +100,10 @@ function App() {
   }
 
   const containerClass =
-    "min-h-screen flex flex-col justify-start sm:justify-center items-center bg-white transition-mt pt-0 pb-4"; 
+    "min-h-screen flex flex-col justify-start sm:justify-center items-center bg-white transition-mt pt-0 pb-0"; // min-h-screen para crecer si es necesario
 
   return (
-    <div className="relative min-h-screen h-screen overflow-hidden z-30">
+    <div className="relative h-screen z-30"> {/* Cambia min-h-screen por h-screen */}
       {/* Overlay global */}
       {playingInfo && (
         <MessageReproduct

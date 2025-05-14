@@ -23,3 +23,88 @@ body {
   -ms-user-select: none;
 }
 
+.mt-global {
+  margin-top: 0.7rem !important;
+}
+.transition-mt {
+  transition: margin-top 0.35s cubic-bezier(0.4,0,0.2,1);
+}
+
+.fade-in-down {
+  animation: fadeInDown 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.fade-in-organic {
+  animation: fadeInOrganic 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+@keyframes fadeInOrganic {
+  from {
+    opacity: 0;
+    transform: translateY(32px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.transition-fade-move {
+  opacity: 0;
+  transform: translateY(24px) scale(0.98);
+  transition: opacity 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.35s cubic-bezier(0.4,0,0.2,1);
+  will-change: opacity, transform;
+}
+.transition-fade-move.in {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+@media (max-width: 640px) {
+  .responsive-table {
+    min-width: 360px;
+    font-size: 0.92rem;
+  }
+  .responsive-table th,
+  .responsive-table td {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.91rem;
+  }
+  .responsive-table-wrapper {
+    padding-bottom: 0.5rem;
+  }
+}
+
+/* Animación para el menú de acciones */
+@keyframes fadeInMenu {
+  from { opacity: 0; transform: translateY(10px);}
+  to { opacity: 1; transform: translateY(0);}
+}
+.animate-fade-in {
+  animation: fadeInMenu 0.18s cubic-bezier(0.4,0,0.2,1);
+}
+

@@ -23,6 +23,12 @@ body {
   -ms-user-select: none;
 }
 
+.global-blur > #root {
+  filter: blur(6px) !important;
+  pointer-events: none;
+  user-select: none;
+}
+
 .mt-global {
   margin-top: 0.7rem !important;
 }

@@ -18,6 +18,19 @@ function MobileMenuPortal({ open, anchorRef, onClose, onPlay, downloadUrl, downl
 
   if (!open) return null;
 
+  // Función para descargar manualmente el archivo (para máxima compatibilidad móvil)
+  const handleDownload = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = downloadName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    onClose();
+  };
+
   return ReactDOM.createPortal(
     <div
       className="absolute z-50 w-28 bg-white border border-gray-200 rounded shadow-lg animate-fade-in"
@@ -28,19 +41,22 @@ function MobileMenuPortal({ open, anchorRef, onClose, onPlay, downloadUrl, downl
       }}
     >
       <button
-        onClick={() => { onClose(); setTimeout(onPlay, 100); }}
+        onMouseDown={e => {
+          e.preventDefault();
+          e.stopPropagation();
+          onPlay();
+          onClose();
+        }}
         className="block w-full text-left px-3 py-2 text-green-600 hover:bg-gray-50 hover:text-green-800 text-sm"
       >
         Reproducir
       </button>
-      <a
-        href={downloadUrl}
-        download={downloadName}
+      <button
+        onMouseDown={handleDownload}
         className="block w-full text-left px-3 py-2 text-blue-600 hover:bg-gray-50 hover:text-blue-800 text-sm"
-        onClick={onClose}
       >
         Descargar
-      </a>
+      </button>
     </div>,
     document.body
   );

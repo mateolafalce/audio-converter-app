@@ -100,10 +100,10 @@ function App() {
   }
 
   const containerClass =
-    "min-h-screen flex flex-col justify-start sm:justify-center items-center bg-white transition-mt pt-0 pb-0"; // min-h-screen para crecer si es necesario
+    "min-h-screen flex flex-col justify-start sm:justify-center items-center bg-white transition-mt pt-0 pb-0"; 
 
   return (
-    <div className="relative h-screen z-30"> {/* Cambia min-h-screen por h-screen */}
+    <div className="relative h-screen z-30"> 
       {/* Overlay global */}
       {playingInfo && (
         <MessageReproduct
@@ -126,60 +126,66 @@ function App() {
               <div className="mt-4 p-4 bg-blue-50 text-blue-800 rounded-lg text-center">
                 Procesando audio, por favor espere...
               </div>
-            ) : showContent && (
-              <ContentTransition key={contentKey}>
-                {mode === MODES.RECORDING && audioContext && sourceNode && (
-                  <>
-                    <div className="mb-2">
-                      <div className="ml-2 text-gray-500 font-medium">Tiempo: {formatTime(recordingTime)}</div>
-                    </div>
-                    <div className="rounded bg-gray-100 p-2 my-2">
-                      <FrequencyVisualizer audioContext={audioContext} sourceNode={sourceNode} />
-                    </div>
-                  </>
-                )}
+            ) : (
+              <>
+                {showContent && (
+                  <ContentTransition key={contentKey}>
+                    {mode === MODES.RECORDING && audioContext && sourceNode && (
+                      <>
+                        <div className="mb-2">
+                          <div className="ml-2 text-gray-500 font-medium">Tiempo: {formatTime(recordingTime)}</div>
+                        </div>
+                        <div className="rounded bg-gray-100 p-2 my-2">
+                          <FrequencyVisualizer audioContext={audioContext} sourceNode={sourceNode} />
+                        </div>
+                      </>
+                    )}
 
-                {mode === MODES.RESULTS && (
-                  <>
-                    <Waveform audioUrl={audioURL} />
-                    <div className="mt-4">
-                      {/* Ajusta el audio para que no se corte en móviles */}
-                      <audio
-                        src={audioURL}
-                        controls
-                        controlsList="nodownload"
-                        className="w-full max-w-full overflow-x-auto [&::-webkit-media-controls-panel]:bg-gray-100"
-                        style={{ minWidth: 0 }}
-                      />
-                    </div>
-                    {showTable && (
-                      <div className="mt-4 fade-in-organic">
-                        <ResultTable
-                          files={processedFiles}
-                          onPlayAudio={(info, url) => handlePlayAudio(info, url)}
-                        />
+                    {mode === MODES.RESULTS && (
+                      <>
+                        <Waveform audioUrl={audioURL} />
+                        <div className="mt-4">
+                          <audio
+                            src={audioURL}
+                            controls
+                            controlsList="nodownload"
+                            className="w-full max-w-full overflow-x-auto [&::-webkit-media-controls-panel]:bg-gray-100"
+                            style={{ minWidth: 0 }}
+                          />
+                        </div>
+                        {showTable && (
+                          <div className="mt-4 fade-in-organic">
+                            <ResultTable
+                              files={processedFiles}
+                              onPlayAudio={(info, url) => handlePlayAudio(info, url)}
+                            />
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    {mode === MODES.IDLE && (
+                      <div className="h-32 bg-gray-100 rounded flex items-center justify-center text-gray-500 w-full">
+                        Graba audio para ver el visualizador
                       </div>
                     )}
-                  </>
+                  </ContentTransition>
                 )}
-
-                {mode === MODES.IDLE && (
-                  <div className="h-32 bg-gray-100 rounded flex items-center justify-center text-gray-500 w-full">
-                    Graba audio para ver el visualizador
-                  </div>
+                {/* Solo renderiza AudioRecorder si NO está cargando */}
+                {!showLoading && (
+                  <AudioRecorder
+                    recording={recording}
+                    setRecording={setRecording}
+                    setAudioURL={setAudioURL}
+                    setAudioContext={setAudioContext}
+                    setSourceNode={setSourceNode}
+                    setRecordingTime={setRecordingTime}
+                    setIsLoading={setIsLoading}
+                    setProcessedFiles={setProcessedFiles}
+                  />
                 )}
-              </ContentTransition>
+              </>
             )}
-            <AudioRecorder
-              recording={recording}
-              setRecording={setRecording}
-              setAudioURL={setAudioURL}
-              setAudioContext={setAudioContext}
-              setSourceNode={setSourceNode}
-              setRecordingTime={setRecordingTime}
-              setIsLoading={setIsLoading}
-              setProcessedFiles={setProcessedFiles}
-            />
           </div>
         </div>
       </div>

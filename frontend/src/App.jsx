@@ -99,13 +99,11 @@ function App() {
     setCurrentAudio(null);
   }
 
-  // Layout: centrado o arriba según layoutMode (no según mode)
-  const containerClass = layoutMode === "center"
-    ? "min-h-screen flex flex-col justify-center items-center bg-white transition-mt"
-    : "min-h-screen bg-white transition-mt mt-global";
+  const containerClass =
+    "min-h-screen flex flex-col justify-start sm:justify-center items-center bg-white transition-mt pt-0 pb-24"; // pt-0 para quitar padding top
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen h-screen overflow-hidden z-30">
       {/* Overlay global */}
       {playingInfo && (
         <MessageReproduct
@@ -119,8 +117,9 @@ function App() {
       {/* Contenido principal con blur si overlay activo */}
       <div className={playingInfo ? "pointer-events-none blur-sm select-none transition-all duration-200" : ""}>
         <div className={containerClass}>
-          <div className="p-2 sm:p-4 max-w-full sm:max-w-xl mx-auto w-full">
-            <h1 className="text-xl mb-sm:text-2xl font-bold mt-4 mb-4 text-center">
+          {/* Ajusta el ancho y padding para móviles */}
+          <div className="mt-2 p-2 sm:p-4 max-w-full sm:max-w-xl mx-auto w-full">
+            <h1 className="text-xl font-bold mt-0 mb-2 text-center">
               Conversor de Audio Analógico a Digital
             </h1>
             {showLoading ? (
@@ -144,11 +143,13 @@ function App() {
                   <>
                     <Waveform audioUrl={audioURL} />
                     <div className="mt-4">
+                      {/* Ajusta el audio para que no se corte en móviles */}
                       <audio
                         src={audioURL}
                         controls
                         controlsList="nodownload"
-                        className="w-full [&::-webkit-media-controls-panel]:bg-gray-100"
+                        className="w-full max-w-full overflow-x-auto [&::-webkit-media-controls-panel]:bg-gray-100"
+                        style={{ minWidth: 0 }}
                       />
                     </div>
                     {showTable && (

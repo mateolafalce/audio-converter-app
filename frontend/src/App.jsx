@@ -100,7 +100,7 @@ function App() {
   }
 
   const containerClass =
-    "min-h-screen flex flex-col justify-start sm:justify-center items-center bg-white transition-mt pt-0 pb-24"; // pt-0 para quitar padding top
+    "min-h-screen flex flex-col justify-start sm:justify-center items-center bg-white transition-mt pt-0 pb-4"; 
 
   return (
     <div className="relative min-h-screen h-screen overflow-hidden z-30">

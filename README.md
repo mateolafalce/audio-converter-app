@@ -1,4 +1,4 @@
-# Trabajo Práctico Integrador 🤖👹👄👁️👴
+# Trabajo Práctico Integrador
 
 ## Ingeniería aplicada a la comunicación de datos
 

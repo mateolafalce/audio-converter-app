@@ -1,22 +1,24 @@
 import React from "react";
 import MicrofonoSVG from "../assets/icons/microfono.svg";
 
-const btnBase = "rounded-full text-white transition-all duration-200 ease-in-out focus:outline-none flex items-center justify-center";
-const size = "w-16 h-16"; 
-const iconClass = "w-9 h-9 mx-auto my-auto block"; 
+const btnBase = "rounded-full text-white transition-all duration-200 ease-in-out focus:outline-none flex items-center justify-center select-none";
+const size = "w-16 h-16";
+const iconClass = "w-9 h-9 mx-auto my-auto block select-none";
 
 function IconButton({ onClick, isActive }) {
   return (
     <button
       onClick={onClick}
       className={`${btnBase} ${size} group ${isActive ? "bg-green-500" : "bg-red-500"} hover:-translate-y-1 active:scale-95 hover:shadow focus:ring-2 focus:ring-offset-2 outline-none`}
-      style={{ transition: 'transform 0.2s, box-shadow 0.2s, filter 0.2s' }}
+      style={{ transition: 'transform 0.2s, box-shadow 0.2s, filter 0.2s', userSelect: 'none' }}
+      tabIndex={0}
     >
       <img
         src={MicrofonoSVG}
         alt="Micrófono"
         className={iconClass}
-        style={{ transition: 'transform 0.2s, color 0.2s', display: 'block' }}
+        style={{ transition: 'transform 0.2s, color 0.2s', display: 'block', userSelect: 'none', pointerEvents: 'none' }}
+        draggable={false}
       />
       <style>
         {`

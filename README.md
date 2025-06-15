@@ -3,10 +3,15 @@
 ## Ingeniería aplicada a la comunicación de datos
 
 **Materia:** Comunicación de Datos
+
 **Comisión:** S31
+
 **Año:** 2025
+
 **Profesores:** Gerardo Leskiw y Agustin Alvarez Ferrando
+
 **Grupo: 8**
+
 **Alumnos:**
 
 - Antar Mauro Daniel – 32594

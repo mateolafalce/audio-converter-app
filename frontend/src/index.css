@@ -14,7 +14,7 @@ input:-webkit-autofill:active {
 
 body {
   margin: 0;
-  font-family: 'Segoe UI','Noto Sans';
+  font-family: 'Noto Sans', 'Segoe UI', 'Liberation Sans', 'Cantarell', Arial, sans-serif;
   background-color: white; /* Fondo oscuro */
   overflow-x: hidden; /* Evita scroll horizontal no deseado */
   user-select: none;

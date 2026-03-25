@@ -3,7 +3,6 @@ import IconButton from "../components/IconButton";
 import { bufferToWav } from "../utils/bufferToWav";
 import { getApiUrl } from "../utils/getApiUrl";
 import axios from "axios";
-import MessageAlert from "../components/MessageAlert";
 
 function AudioRecorder({
   recording,
@@ -13,30 +12,20 @@ function AudioRecorder({
   setSourceNode,
   setRecordingTime,
   setIsLoading,
-  setProcessedFiles
+  setProcessedFiles,
+  setAlertMsg,
+  onReset,
+  hidden,
 }) {
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const timerRef = useRef(null);
   const bitDepth = 16;
   const [isBusy, setIsBusy] = useState(false);
-  const [alertMsg, setAlertMsg] = useState("");
 
-  const resetToInitial = () => {
-    setAlertMsg("");
-    setAudioURL("");
-    setRecording(false);
-    setAudioContext(null);
-    setSourceNode(null);
-    setRecordingTime(0);
-    setProcessedFiles([]);
-    setIsLoading(false);
-  };
-
-  // Helper para mostrar alertas de forma confiable
   const showError = (msg) => {
-    setAlertMsg(""); // Limpia primero
-    setTimeout(() => setAlertMsg(msg), 10); // Luego setea el mensaje, forzando el remount
+    setAlertMsg("");
+    setTimeout(() => setAlertMsg(msg), 10);
   };
 
   const startRecording = async () => {
@@ -54,13 +43,21 @@ function AudioRecorder({
       setAudioContext(context); setSourceNode(source);
       const devices = await navigator.mediaDevices.enumerateDevices();
       if (!devices.some(device => device.kind === 'audioinput')) throw new Error('No se detectaron micrófonos');
-      mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'audio/mp4' });
+
+      // Detectar el mimeType más compatible
+      const mimeType = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', ''].find(
+        t => t === '' || MediaRecorder.isTypeSupported(t)
+      );
+      mediaRecorderRef.current = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+
       setRecordingTime(0);
       timerRef.current = setInterval(() => setRecordingTime(prev => prev + 1), 1000);
-      mediaRecorderRef.current.ondataavailable = (event) => audioChunksRef.current.push(event.data);
+      audioChunksRef.current = [];
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) audioChunksRef.current.push(event.data);
+      };
       mediaRecorderRef.current.onstop = async () => {
         clearInterval(timerRef.current);
-        // Validar que haya chunks y que el blob tenga tamaño suficiente
         if (!audioChunksRef.current.length) {
           setIsBusy(false);
           setRecording(false);
@@ -68,8 +65,9 @@ function AudioRecorder({
           showError("No se grabó audio. Intenta grabar al menos 1 segundo.");
           return;
         }
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-        if (!audioBlob || audioBlob.size < 2000) { // subí el mínimo a 2KB
+        const actualMimeType = mediaRecorderRef.current.mimeType || 'audio/webm';
+        const audioBlob = new Blob(audioChunksRef.current, { type: actualMimeType });
+        if (!audioBlob || audioBlob.size < 1000) {
           setIsBusy(false);
           setRecording(false);
           setAudioURL("");
@@ -82,11 +80,10 @@ function AudioRecorder({
           await handleProcessAudio(audioUrl);
         } catch (e) {
           setAudioURL("");
-          showError("El audio grabado no es válido o está corrupto. Intenta grabar de nuevo.");
+          showError("Error al procesar el audio. Intenta grabar de nuevo.");
         }
         setIsBusy(false);
       };
-      audioChunksRef.current = [];
       mediaRecorderRef.current.start(100);
       setRecording(true);
       setIsBusy(false);
@@ -94,6 +91,8 @@ function AudioRecorder({
       showError(
         error.message.includes('mimeType')
           ? 'Formato de audio no soportado. Prueba con otro navegador (Chrome/Edge recomendado)'
+          : error.message.includes('No se detectaron') || error.message.includes('no soporta')
+          ? error.message
           : 'Error al acceder al micrófono'
       );
       setRecording(false);
@@ -122,8 +121,7 @@ function AudioRecorder({
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const response = await fetch(audioUrl);
       const arrayBuffer = await response.arrayBuffer();
-      // Validar que el arrayBuffer tenga tamaño suficiente
-      if (!arrayBuffer || arrayBuffer.byteLength < 2000) {
+      if (!arrayBuffer || arrayBuffer.byteLength < 1000) {
         throw new Error("El archivo de audio es demasiado pequeño o está vacío.");
       }
       const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
@@ -164,6 +162,8 @@ function AudioRecorder({
     }
   };
 
+  if (hidden) return null;
+
   return (
     <div className="flex flex-col items-center justify-center">
       <div className="flex gap-2 items-center rounded-lg p-4 bg-white">
@@ -180,9 +180,6 @@ function AudioRecorder({
           </div>
         )}
       </div>
-      {alertMsg && (
-        <MessageAlert mensaje={alertMsg} onClose={resetToInitial} />
-      )}
     </div>
   );
 }

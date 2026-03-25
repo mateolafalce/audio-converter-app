@@ -9,7 +9,8 @@ export default defineConfig({
     port: 8082,
     host: true,
     allowedHosts: [
-      'comunicaciontest.duckdns.org'
+      'comunicaciontest.duckdns.org',
+      'audio-converter.sixtor.site'
     ]
   }
 })

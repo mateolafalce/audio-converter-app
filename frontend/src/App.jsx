@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import FrequencyVisualizer from "./components/FrequencyVisualizer";
 import Waveform from "./components/Waveform";
 import AudioRecorder from "./features/AudioRecorder";
 import ResultTable from "./components/ResultTable";
-import MessageReproduct from "./components/MessageReproduct"; 
+import MessageReproduct from "./components/MessageReproduct";
+import MessageAlert from "./components/MessageAlert";
 import { formatTime } from "./utils/formatTime";
 
 //son modos de la app
@@ -31,6 +32,18 @@ function App() {
   const [layoutMode, setLayoutMode] = useState("center");
   const [showLoading, setShowLoading] = useState(false);
   const [showContent, setShowContent] = useState(true);
+  const [alertMsg, setAlertMsg] = useState("");
+
+  const resetToInitial = useCallback(() => {
+    setAlertMsg("");
+    setAudioURL("");
+    setRecording(false);
+    setAudioContext(null);
+    setSourceNode(null);
+    setRecordingTime(0);
+    setProcessedFiles([]);
+    setIsLoading(false);
+  }, []);
 
   // Determina el modo de la app según los estados
   useEffect(() => {
@@ -100,10 +113,14 @@ function App() {
   }
 
   const containerClass =
-    "min-h-screen flex flex-col justify-start sm:justify-center items-center bg-white transition-mt pt-0 pb-0"; 
+    "min-h-screen flex flex-col justify-start sm:justify-center items-center bg-white transition-mt pt-0 pb-0";
 
   return (
-    <div className="relative h-screen z-30"> 
+    <div className="relative h-screen z-30">
+      {/* Alert global — siempre visible, fuera de cualquier div hidden */}
+      {alertMsg && (
+        <MessageAlert mensaje={alertMsg} onClose={resetToInitial} />
+      )}
       {/* Overlay global */}
       {playingInfo && (
         <MessageReproduct
@@ -171,21 +188,21 @@ function App() {
                     )}
                   </ContentTransition>
                 )}
-                {/* Solo renderiza AudioRecorder si NO está cargando */}
-                {!showLoading && (
-                  <AudioRecorder
-                    recording={recording}
-                    setRecording={setRecording}
-                    setAudioURL={setAudioURL}
-                    setAudioContext={setAudioContext}
-                    setSourceNode={setSourceNode}
-                    setRecordingTime={setRecordingTime}
-                    setIsLoading={setIsLoading}
-                    setProcessedFiles={setProcessedFiles}
-                  />
-                )}
               </>
             )}
+            <AudioRecorder
+              recording={recording}
+              setRecording={setRecording}
+              setAudioURL={setAudioURL}
+              setAudioContext={setAudioContext}
+              setSourceNode={setSourceNode}
+              setRecordingTime={setRecordingTime}
+              setIsLoading={setIsLoading}
+              setProcessedFiles={setProcessedFiles}
+              setAlertMsg={setAlertMsg}
+              onReset={resetToInitial}
+              hidden={showLoading}
+            />
           </div>
         </div>
       </div>
